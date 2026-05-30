@@ -325,7 +325,7 @@
 
           <div class="cmd-input-wrapper" style="margin-bottom: 12px;">
             <span class="cmd-prompt">$</span>
-            <input type="text" readonly value="curl -sL {{ API_BASE }}/install.sh | bash -s uninstall" class="cmd-input" style="flex: 1;">
+            <input type="text" readonly :value="getUninstallCommand()" class="cmd-input" style="flex: 1;">
             <button @click="copyUninstallCmd" class="btn btn-icon btn-green" :title="trans.copy" style="margin-left: 8px;">📋</button>
           </div>
 
@@ -381,6 +381,7 @@ const settings = ref({
   tg_bot_token: '',
   tg_chat_id: ''
 })
+const apiSecret = ref('')
 
 const showEditModal = ref(false)
 const editForm = ref({
@@ -458,6 +459,7 @@ const loadSettings = async () => {
         tg_bot_token: settingsData.tg_bot_token || '',
         tg_chat_id: settingsData.tg_chat_id || ''
       }
+      apiSecret.value = data.api_secret || ''
     }
   } catch (e) {
     console.error('[ERROR] Load settings failed:', e)
@@ -543,7 +545,11 @@ const addServer = async () => {
 
 const getInstallCommand = (serverId) => {
   const HOST = API_BASE
-  return `curl -sL ${HOST}/install.sh | bash -s install ${serverId} \${API_SECRET} ${HOST}/update 60`
+  return `curl -sL ${HOST}/install.sh | bash -s install ${serverId} ${apiSecret.value} ${HOST}/update 60`
+}
+
+const getUninstallCommand = () => {
+  return `curl -sL ${API_BASE}/install.sh | bash -s uninstall`
 }
 
 const copyCmd = async (cmd) => {
@@ -564,7 +570,7 @@ const copyCmd = async (cmd) => {
 }
 
 const copyUninstallCmd = async () => {
-  const cmd = `curl -sL ${API_BASE}/install.sh | bash -s uninstall`
+  const cmd = getUninstallCommand()
   try {
     await navigator.clipboard.writeText(cmd)
   } catch (e) {
